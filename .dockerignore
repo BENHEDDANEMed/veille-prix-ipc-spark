@@ -1,0 +1,8 @@
+# data/ est un volume ; seul le fichier source est copié dans l'image (démo possible sans Internet)
+data/*
+!data/raw/
+.venv/
+frontend/
+.remember/
+.git/
+**/__pycache__/

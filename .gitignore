@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+node_modules/
+frontend/dist/
+frontend/.impeccable/
+.remember/
+spark-warehouse/
+metastore_db/
+derby.log
+data/*
+!data/raw/
+Claude outputs/
+CLAUDE.md
+*.zip
+docs/*.pdf
+docs/

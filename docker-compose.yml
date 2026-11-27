@@ -1,0 +1,36 @@
+# Lancement : docker compose up --build         (INTERVALLE=2 docker compose up : publication plus rapide)
+# Repartir de zéro (efface toutes les données calculées) : docker compose down -v
+# Relancé sans "down -v", le flux reprend là où il s'était arrêté (checkpoint Spark).
+services:
+  streaming:
+    build: .
+    image: ipc-spark
+    command: python spark/03_streaming.py
+    ports: ["4040:4040"]
+    volumes: [ipc-data:/app/data]
+
+  producteur:
+    build: .
+    image: ipc-spark
+    # Collecte (réutilise le fichier brut s'il est déjà là), puis publication d'un mois toutes les N secondes
+    command: sh -c "python scripts/01_collecte.py && python scripts/02_producteur_flux.py --intervalle ${INTERVALLE:-5}"
+    volumes: [ipc-data:/app/data]
+    depends_on: [streaming]
+
+  api:
+    build: .
+    image: ipc-spark
+    # FastAPI + une SparkSession ; documentation interactive sur http://localhost:8000/docs
+    command: uvicorn main:app --app-dir api --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    volumes: [ipc-data:/app/data]
+
+  frontend:
+    build: ./frontend
+    # Interface React servie par Nginx : http://localhost:3000
+    ports: ["3000:80"]
+    depends_on: [api]
+
+# Volume nommé (stocké côté Linux) : environ 4 fois plus rapide qu'un dossier Windows monté
+volumes:
+  ipc-data:
